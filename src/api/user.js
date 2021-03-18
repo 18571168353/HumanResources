@@ -1,24 +1,14 @@
 import request from '@/utils/request'
-
+// 封装登录接口
 export function login(data) {
+  // 返回一个promise对象
   return request({
-    url: '/vue-admin-template/user/login',
-    method: 'post',
+    url: '/sys/login',
+    method: 'POST',
     data
   })
 }
 
-export function getInfo(token) {
-  return request({
-    url: '/vue-admin-template/user/info',
-    method: 'get',
-    params: { token }
-  })
-}
+export function getInfo(token) {}
 
-export function logout() {
-  return request({
-    url: '/vue-admin-template/user/logout',
-    method: 'post'
-  })
-}
+export function logout() {}
