@@ -9,6 +9,14 @@ export function login(data) {
   })
 }
 
+// 获取用户资料的接口
+export function getUserInfo() {
+  return request({
+    url: '/sys/profile',
+    method: 'POST'
+  })
+}
+
 export function getInfo(token) {}
 
 export function logout() {}

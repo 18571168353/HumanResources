@@ -1,11 +1,11 @@
 // 权限拦截 导航守卫 路由守卫
 import router from '@/router' // 引入路由实例
 import store from '@/store' // 引入vuex store实例
-const whiteList = ['/login', '/404'] // 定义一个白名单
 import NProgress from 'nprogress' // 引入一份进度条插件
 import 'nprogress/nprogress.css' // 引入进度条样式
+const whiteList = ['/login', '/404'] // 定义一个白名单
 // 前置路由
-router.beforeEach((to, from, next) => {
+router.beforeEach(async(to, from, next) => {
   NProgress.start() // 开启进度条
   // 如果有token
   if (store.getters.token) {
@@ -14,6 +14,9 @@ router.beforeEach((to, from, next) => {
       // 直接跳到主页
       next('/')
     } else {
+      if (!store.getters.userId) {
+        await store.dispatch('user/getUserInfo')
+      }
       // 否则直接放行
       next()
     }
