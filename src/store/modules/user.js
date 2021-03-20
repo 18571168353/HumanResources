@@ -1,5 +1,5 @@
 import { getToken, setToken, removeToken } from '@/utils/auth'
-import { login, getUserInfo } from '@/api/user'
+import { login, getUserInfo, getUserDetailById } from '@/api/user'
 // 放置状态
 const state = {
   token: getToken(), // 设置token 初始化vuex的时候就从缓存中读取
@@ -38,8 +38,16 @@ const actions = {
   },
   async getUserInfo(context) {
     const result = await getUserInfo()
-    context.commit('setUserInfo', result)
-    // return result
+    const baseInfo = await getUserDetailById(result.userId)
+    context.commit('setUserInfo', { ...result, ...baseInfo })
+    return result
+  },
+  // 登出操作
+  logout(context) {
+    // 刪除token
+    context.commit('removeToken')
+    // 刪除用戶資料
+    context.commit('reomveUserInfo')
   }
 }
 export default {
