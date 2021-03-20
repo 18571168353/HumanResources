@@ -1,4 +1,4 @@
-import { getToken, setToken, removeToken } from '@/utils/auth'
+import { getToken, setToken, removeToken, setTimeStamp } from '@/utils/auth'
 import { login, getUserInfo, getUserDetailById } from '@/api/user'
 // 放置状态
 const state = {
@@ -35,6 +35,8 @@ const actions = {
     // 如果登录接口调用成功,就证明登录信息成功
     // 修改state必须通过mutation
     context.commit('setToken', result)
+    // 拿到token說明登录成功
+    setTimeStamp() // 设置当前时间戳
   },
   async getUserInfo(context) {
     const result = await getUserInfo()
