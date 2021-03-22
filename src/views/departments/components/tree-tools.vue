@@ -15,13 +15,17 @@
         <el-col>{{ treeNode.manager }}</el-col>
         <el-col>
           <!-- 下拉菜单 element -->
-          <el-dropdown>
+          <el-dropdown @command="operateDepts">
             <span> 操作<i class="el-icon-arrow-down" /> </span>
             <!-- 下拉菜单 -->
             <el-dropdown-menu slot="dropdown">
-              <el-dropdown-item>添加子部门</el-dropdown-item>
-              <el-dropdown-item v-if="!isRoot">编辑部门</el-dropdown-item>
-              <el-dropdown-item v-if="!isRoot">删除部门</el-dropdown-item>
+              <el-dropdown-item command="add">添加子部门</el-dropdown-item>
+              <el-dropdown-item v-if="!isRoot" command="edit"
+                >编辑部门</el-dropdown-item
+              >
+              <el-dropdown-item v-if="!isRoot" command="del"
+                >删除部门</el-dropdown-item
+              >
             </el-dropdown-menu>
           </el-dropdown>
         </el-col>
@@ -31,6 +35,7 @@
 </template>
 
 <script>
+import { delDepartments } from '@/api/departments'
 // 该组件需要对外开放属性 外部需要提供一个对象 对象里需要有name  manager
 export default {
   // props可以用数组来接收数据 也可以用对象来接收
@@ -44,6 +49,28 @@ export default {
     isRoot: {
       type: Boolean,
       default: false
+    }
+  },
+  methods: {
+    operateDepts(type) {
+      if (type === 'add') {
+        // 告诉父组件 显示弹层
+        this.$emit('addDepts', this.treeNode) // 为何传出treeNode 因为是添加子部门 需要当前部门的数据
+      } else if (type === 'edit') {
+        alert('编辑')
+      } else {
+        this.$confirm('确定要删除吗?')
+          .then(() => {
+            // eslint-disable-next-line no-undef
+            return delDepartments(this.treeNode.id)
+          })
+          .then(() => {
+            // 重新获取数据
+            //  如果删除成功了  就会进入这里
+            this.$emit('delDepts') // 触发自定义事件
+            this.$message.success('删除部门成功')
+          })
+      }
     }
   }
 }

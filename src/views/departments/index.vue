@@ -4,25 +4,37 @@
       <!-- 组织架构内容- 头部 -->
       <el-card class="tree-card">
         <!-- 放置解构内容 -->
-        <tree-rools :treeNode="company" :isRoot="true" />
+        <tree-tools :treeNode="company" :isRoot="true" @addDepts="addDepts" />
         <!-- 放置一个el-tree -->
         <el-tree :data="departs" :props="defaultProps" default-expand-all>
           <!-- 传入内容 插槽内容 -->
           <!-- 放置解构内容 -->
-          <tree-rools slot-scope="{ data }" :treeNode="data" />
+          <tree-tools
+            slot-scope="{ data }"
+            :treeNode="data"
+            @delDepts="getDepartments"
+            @addDepts="addDepts"
+          />
         </el-tree>
       </el-card>
     </div>
+    <add-dept
+      :show-dialog.sync="showDialog"
+      :tree-node="node"
+      @addDepts="getDepartments"
+    />
   </div>
 </template>
 
 <script>
-import TreeRools from './components/tree-tools'
+import TreeTools from './components/tree-tools'
+import AddDept from './components/add-dept'
+
 import { getDepartments } from '@/api/departments'
 import { tranListToTreeData } from '@/utils'
 export default {
   name: '',
-  components: { TreeRools },
+  components: { TreeTools, AddDept },
   props: {},
   data() {
     return {
@@ -30,7 +42,9 @@ export default {
       departs: [],
       defaultProps: {
         label: 'name'
-      }
+      },
+      showDialog: false, // 控制添加弹框的显示与隐藏
+      node: null // 记录当前点击的node节点
     }
   },
   computed: {},
@@ -40,11 +54,17 @@ export default {
   },
   mounted() {},
   methods: {
+    // 获取组织架构的数据
     async getDepartments() {
       const result = await getDepartments()
-      this.company = { name: result.companyName, manager: '负责人' }
+      this.company = { name: result.companyName, manager: '负责人', id: '' }
       this.departs = tranListToTreeData(result.depts, '') // 需要将其转化成树形结构
-      console.log(result)
+      // console.log(result)
+    },
+    // 打开添加弹框
+    addDepts(node) {
+      this.showDialog = true
+      this.node = node
     }
   }
 }
