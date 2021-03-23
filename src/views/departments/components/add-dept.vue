@@ -1,5 +1,5 @@
 <template>
-  <el-dialog title="编辑部门" :visible="showDialog" @close="btnCancel">
+  <el-dialog :title="showTitle" :visible="showDialog" @close="btnCancel">
     <el-form
       ref="deptForm"
       :model="formData"
@@ -9,21 +9,21 @@
       <el-form-item label="部门名称" prop="name">
         <el-input
           v-model="formData.name"
-          style="width:80%"
+          style="width:90%"
           placeholder="1-50个字符"
         />
       </el-form-item>
       <el-form-item label="部门编码" prop="code">
         <el-input
           v-model="formData.code"
-          style="width:80%"
+          style="width:90%"
           placeholder="1-50个字符"
         />
       </el-form-item>
       <el-form-item label="部门负责人" prop="manager">
         <el-select
           v-model="formData.manager"
-          style="width:80%"
+          style="width:90%"
           placeholder="请选择"
           @focus="getEmployeeSimple"
         >
@@ -38,7 +38,7 @@
       </el-form-item>
       <el-form-item label="部门介绍" prop="introduce">
         <el-input
-          style="width:80%"
+          style="width:90%"
           placeholder="1-300个字符"
           type="textarea"
           :rows="3"
@@ -54,7 +54,12 @@
 </template>
 
 <script>
-import { addDepartments, getDepartments } from '@/api/departments'
+import {
+  addDepartments,
+  getDepartments,
+  getDepartDetail,
+  updateDepartments
+} from '@/api/departments'
 import { getEmployeeSimple } from '@/api/employees'
 export default {
   name: '',
@@ -75,9 +80,21 @@ export default {
     const checkNameRepeat = async (rule, value, callback) => {
       // 先要获取最新的组织架构数据
       const { depts } = await getDepartments()
-      const isRepeat = depts
-        .filter(item => item.pid === this.treeNode.id)
-        .some(item => item.name === value)
+      let isRepeat = false
+      if (this.formData.id) {
+        // 有id=>编辑
+        isRepeat = depts
+          .filter(
+            item =>
+              item.pid === this.treeNode.pid && item.id !== this.treeNode.id
+          )
+          .some(item => item.name === value)
+      } else {
+        // 无id=>添加
+        isRepeat = depts
+          .filter(item => item.pid === this.treeNode.id)
+          .some(item => item.name === value)
+      }
       isRepeat
         ? callback(new Error(`同级部门下已经有${value}的部门了`))
         : callback()
@@ -86,7 +103,16 @@ export default {
     const checkCodeRepeat = async (rule, value, callback) => {
       // 先要获取最新的组织架构数据
       const { depts } = await getDepartments()
-      const isRepeat = depts.some(item => item.code === value && value) // 这里加一个 value不为空 因为我们的部门有可能没有code
+      let isRepeat = false
+      if (this.formData.id) {
+        // 有id=>编辑
+        isRepeat = depts
+          .filter(item => item.id !== this.formData.id)
+          .some(item => item.code === value)
+      } else {
+        // 无id=>添加
+        isRepeat = depts.some(item => item.code === value && value) // 这里加一个 value不为空 因为我们的部门有可能没有code
+      }
       isRepeat
         ? callback(new Error(`组织架构中已经有部门使用${value}编码`))
         : callback()
@@ -137,7 +163,11 @@ export default {
       peoples: []
     }
   },
-  computed: {},
+  computed: {
+    showTitle() {
+      return this.formData.id ? '编辑部门' : '新增部门'
+    }
+  },
   watch: {},
   created() {},
   mounted() {},
@@ -146,11 +176,21 @@ export default {
     async getEmployeeSimple() {
       this.peoples = await getEmployeeSimple()
     },
+    // 获取部门详情
+    async getDepartDetail(id) {
+      this.formData = await getDepartDetail(id)
+    },
     // 确定添加
     btnOk() {
       this.$refs.deptForm.validate(async isOK => {
         if (isOK) {
-          await addDepartments({ ...this.formData, pid: this.treeNode.id })
+          if (this.formData.id) {
+            // 有id=>编辑
+            await updateDepartments(this.formData)
+          } else {
+            // 无id=>添加
+            await addDepartments({ ...this.formData, pid: this.treeNode.id })
+          }
           this.$emit('addDepts')
           // 子组件 update:固定写法 (update:props名称, 值)
           this.$emit('update:showDialog', false) // 触发事件
@@ -160,6 +200,12 @@ export default {
     },
     // 取消添加
     btnCancel() {
+      this.formData = {
+        name: '', // 部门名称
+        code: '', // 部门编码
+        manager: '', // 部门管理者
+        introduce: '' // 部门介绍
+      }
       this.$emit('update:showDialog', false) // 触发事件
       this.$refs.deptForm.resetFields() // 重置校验字段
     }

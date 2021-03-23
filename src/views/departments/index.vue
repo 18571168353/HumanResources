@@ -14,6 +14,7 @@
             :treeNode="data"
             @delDepts="getDepartments"
             @addDepts="addDepts"
+            @editDepts="editDepts"
           />
         </el-tree>
       </el-card>
@@ -22,6 +23,7 @@
       :show-dialog.sync="showDialog"
       :tree-node="node"
       @addDepts="getDepartments"
+      ref="addDept"
     />
   </div>
 </template>
@@ -65,6 +67,14 @@ export default {
     addDepts(node) {
       this.showDialog = true
       this.node = node
+    },
+    // 打开编辑对话框
+    editDepts(node) {
+      this.showDialog = true
+      this.node = node
+      // 我们需要在这个位置 调用子组件的方法
+      // 父组件 调用子组件的方法
+      this.$refs.addDept.getDepartDetail(node.id) // 直接调用子组件中的方法 传入一个id
     }
   }
 }
