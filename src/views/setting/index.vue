@@ -5,7 +5,7 @@
         <el-tab-pane label="角色管理">
           <!-- 左侧内容 -->
           <el-row style="height: 60px">
-            <el-button type="primary" size="small"
+            <el-button type="primary" size="small" @click="showDialog = true"
               ><i class="el-icon-plus" /> 新增角色</el-button
             >
           </el-row>
@@ -106,7 +106,7 @@
         </el-tab-pane>
       </el-tabs>
     </el-card>
-    <el-dialog title="编辑弹层" :visible="showDialog">
+    <el-dialog :title="showTitle" :visible="showDialog" @close="btnCancel">
       <el-form
         ref="roleForm"
         :rules="rules"
@@ -123,7 +123,7 @@
       <!-- 底部 -->
       <el-row slot="footer" type="flex" justify="center">
         <el-col :span="6">
-          <el-button size="small">取消</el-button>
+          <el-button size="small" @click="btnCancel">取消</el-button>
           <el-button size="small" type="primary" @click="btnOK">确定</el-button>
         </el-col>
       </el-row>
@@ -137,7 +137,8 @@ import {
   getCompanyInfo,
   deleteRole,
   getRoleDetail,
-  updateRole
+  updateRole,
+  addRole
 } from '@/api/setting'
 import { mapGetters } from 'vuex'
 export default {
@@ -155,14 +156,21 @@ export default {
       },
       formData: {}, // 公司信息
       showDialog: false, // 控制弹出层显示与隐藏
-      roleForm: {}, // 表单数据
+      roleForm: {
+        name: '', // 名称
+        description: '' // 详细信息
+      }, // 表单数据
       rules: {
         name: [{ required: true, message: '角色名称不能为空', trigger: 'blur' }]
       } // 验证规则
     }
   },
   computed: {
-    ...mapGetters(['companyId'])
+    ...mapGetters(['companyId']),
+    // 切换弹窗提示信息
+    showTitle() {
+      return this.roleForm.id ? '编辑角色' : '新增角色'
+    }
   },
   watch: {},
   created() {
@@ -195,12 +203,16 @@ export default {
         this.getRoleList() // 重新加载数据
         this.$message.success('删除成功!')
       } catch (err) {
-        this.$message.error('取消删除!')
+        // this.$message.error('取消删除!')
+      }
+      if (document.querySelectorAll('.el-card tbody tr').length === 1) {
+        this.page.page = this.page.page > 1 ? this.page.page - 1 : 1
       }
     },
     // 编辑,表单获取数据
     async editRole(id) {
       this.roleForm = await getRoleDetail(id)
+      console.log(this.roleForm)
       this.showDialog = true // 为了不出现闪烁的问题 先获取数据 再弹出层
     },
     // 点击编辑弹窗确定按钮
@@ -212,6 +224,8 @@ export default {
           await updateRole(this.roleForm)
         } else {
           // 没有id=> 新增
+          // 新增业务
+          await addRole(this.roleForm)
         }
         // 重新拉取数据
         this.getRoleList()
@@ -220,6 +234,16 @@ export default {
       } catch (err) {
         console.log(err)
       }
+    },
+    // 点击取消按钮
+    btnCancel() {
+      this.roleForm = {
+        name: '',
+        description: ''
+      }
+      // 移除校验
+      this.$refs.roleForm.resetFields()
+      this.showDialog = false
     }
   }
 }
