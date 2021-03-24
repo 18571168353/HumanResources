@@ -15,18 +15,14 @@
               label="序号"
               width="150px"
               type="index"
-            ></el-table-column>
+            />
             <el-table-column
               align="center"
               label="角色名"
               width="150px"
               prop="name"
-            ></el-table-column>
-            <el-table-column
-              align="center"
-              label="描述"
-              prop="description"
-            ></el-table-column>
+            />
+            <el-table-column align="center" label="描述" prop="description" />
             <el-table-column align="center" label="操作" width="250px">
               <template slot-scope="{ row }">
                 <el-button size="small" type="success">分配权限</el-button>
@@ -51,11 +47,11 @@
           >
             <!-- 分页组件 -->
             <el-pagination
-              @current-change="handleCurrentChange"
               :current-page="page.page"
               :page-size="page.pagesize"
-              layout=" prev, pager, next"
               :total="page.total"
+              layout=" prev, pager, next"
+              @current-change="handleCurrentChange"
             />
           </el-row>
         </el-tab-pane>
@@ -151,7 +147,7 @@ export default {
       page: {
         // 放置页码及相关数据
         page: 1,
-        pagesize: 10,
+        pagesize: 5,
         total: 0 // 记录总数
       },
       formData: {}, // 公司信息
@@ -184,7 +180,7 @@ export default {
       const { total, rows } = await getRoleList(this.page)
       this.page.total = total
       this.list = rows
-      console.log(this.list)
+      // console.log(this.list)
     },
     // 分页跳转
     handleCurrentChange(newpage) {
