@@ -8,7 +8,9 @@
       <template v-slot:after>
         <el-button size="mini" type="success">excl导入</el-button>
         <el-button size="mini" type="danger">excl导出</el-button>
-        <el-button size="mini" type="primary">新增员工</el-button>
+        <el-button size="mini" type="primary" @click="showDialog = true"
+          >新增员工</el-button
+        >
       </template>
     </page-tools>
     <el-card v-loading="loading">
@@ -81,15 +83,17 @@
         </el-pagination></el-row
       >
     </el-card>
+    <add-demployee :show-dialog.sync="showDialog" />
   </div>
 </template>
 
 <script>
-import { getEmployeeList, delEmployee } from '@/api/employees'
+import { getEmployeeList, delEmployee} from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees' // 引入员工的枚举对象
+import AddDemployee from './components/add-employee'
 export default {
   name: '',
-  components: {},
+  components: { AddDemployee },
   props: {},
   data() {
     return {
@@ -99,7 +103,8 @@ export default {
         page: 1,
         size: 10
       },
-      total: 0
+      total: 0,
+      showDialog: false // 添加弹框的显示与隐藏
     }
   },
   computed: {},
@@ -114,7 +119,7 @@ export default {
       this.loading = true
       const { rows, total } = await getEmployeeList(this.page)
       this.list = rows
-      console.log(this.list)
+      // console.log(this.list)
       this.total = total
       this.loading = false
     },
@@ -137,12 +142,13 @@ export default {
         this.getEmployeeList()
         this.$message.success('删除该员工成功!')
       } catch (error) {
-        console.log(error)
+        // console.log(error)
       }
       if (document.querySelectorAll('.el-card tbody tr').length === 1) {
         this.page.page = this.page.page > 1 ? this.page.page - 1 : 1
       }
     }
+    // 新增员工
   }
 }
 </script>
