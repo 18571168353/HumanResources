@@ -49,9 +49,10 @@ export default {
       })
       try {
         await importEmployee(arr) // 调用导入接口
+        this.$message.success('导入成功')
         this.$router.back()
       } catch (error) {
-        this.$message.error('导入失败!')
+        this.$message.error('导入电话号码重复!')
       }
     },
     // 转化excel日期格式
