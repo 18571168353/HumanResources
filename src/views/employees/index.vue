@@ -6,7 +6,7 @@
       <template v-slot:before> 共{{ total }}条记录 </template>
       <!-- 右侧 -->
       <template v-slot:after>
-        <el-button size="mini" type="success">excl导入</el-button>
+        <el-button size="mini" type="success" @click="$router.push('/import?type=user')">excl导入</el-button>
         <el-button size="mini" type="danger">excl导出</el-button>
         <el-button size="mini" type="primary" @click="showDialog = true"
           >新增员工</el-button
@@ -64,8 +64,7 @@
             <el-button type="text" size="small">调岗</el-button>
             <el-button type="text" size="small">离职</el-button>
             <el-button type="text" size="small">角色</el-button>
-            <el-button type="text" size="small" @click="deleteEmployee(row.id)"
-              >删除</el-button
+            <el-button type="text" size="small" @click="deleteEmployee(row.id)">删除</el-button
             >
           </template>
         </el-table-column>
