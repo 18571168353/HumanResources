@@ -6,8 +6,15 @@
       <template v-slot:before> 共{{ total }}条记录 </template>
       <!-- 右侧 -->
       <template v-slot:after>
-        <el-button size="mini" type="success" @click="$router.push('/import?type=user')">excl导入</el-button>
-        <el-button size="mini" type="danger">excl导出</el-button>
+        <el-button
+          size="mini"
+          type="success"
+          @click="$router.push('/import?type=user')"
+          >excl导入</el-button
+        >
+        <el-button size="mini" type="danger" @click="exportData"
+          >excl导出</el-button
+        >
         <el-button size="mini" type="primary" @click="showDialog = true"
           >新增员工</el-button
         >
@@ -64,7 +71,8 @@
             <el-button type="text" size="small">调岗</el-button>
             <el-button type="text" size="small">离职</el-button>
             <el-button type="text" size="small">角色</el-button>
-            <el-button type="text" size="small" @click="deleteEmployee(row.id)">删除</el-button
+            <el-button type="text" size="small" @click="deleteEmployee(row.id)"
+              >删除</el-button
             >
           </template>
         </el-table-column>
@@ -87,9 +95,10 @@
 </template>
 
 <script>
-import { getEmployeeList, delEmployee} from '@/api/employees'
+import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees' // 引入员工的枚举对象
 import AddDemployee from './components/add-employee'
+import { formatDate } from '@/filters'
 export default {
   name: '',
   components: { AddDemployee },
@@ -146,8 +155,72 @@ export default {
       if (document.querySelectorAll('.el-card tbody tr').length === 1) {
         this.page.page = this.page.page > 1 ? this.page.page - 1 : 1
       }
+    },
+    // 导出功能
+    exportData() {
+      const headers = {
+        姓名: 'username',
+        手机号: 'mobile',
+        入职日期: 'timeOfEntry',
+        聘用形式: 'formOfEmployment',
+        转正日期: 'correctionTime',
+        工号: 'workNumber',
+        部门: 'departmentName'
+      }
+
+      // 懒加载
+      import('@/vendor/Export2Excel').then(async excel => {
+        // 没有一个接口可以同时获取所有数据
+        // 获取员工的接口 页码 每页条数
+        const { rows } = await getEmployeeList({
+          page: 1,
+          size: this.total
+        })
+        // console.log(rows) // 获取所有数据
+        const data = this.formatJson(headers, rows)
+        // 表头对应关系
+        const multiHeader = [['姓名', '主要信息', '', '', '', '', '部门']]
+        // 合并
+        const merges = ['A1:A2', 'B1:F1', 'G1:G2']
+        // console.log(data)
+        excel.export_json_to_excel({
+          header: Object.keys(headers),
+          data,
+          filename: '员工信息表',
+          autoWidth: true,
+          bookType: 'xlsx',
+          multiHeader, // 复杂表头
+          merges // 合并选项
+        })
+      })
+    },
+
+    // 该方法负责将数组转化成二维数组
+    formatJson(headers, rows) {
+      // 方法一首先遍历数组
+      // [{ username: '张三'},{},{}]  => [[’张三'],[],[]]
+      return rows.map(item => {
+        return Object.keys(headers).map(key => {
+          if (
+            headers[key] === 'timeOfEntry' ||
+            headers[key] === 'correctionTime'
+          ) {
+            return formatDate(item[headers[key]])
+          } else if (headers[key] === 'formOfEmployment') {
+            const obj = EmployeeEnum.hireType.find(
+              obj => obj.id === item[headers[key]]
+            )
+            return obj ? obj.value : '未知'
+          }
+          return item[headers[key]]
+        }) // => ["张三", "13811"，"2018","1", "2018", "10002"]
+      })
+
+      // 方法二
+      // return rows.map(item =>
+      //   Object.keys(headers).map(key => item[headers[key]])
+      // )
     }
-    // 新增员工
   }
 }
 </script>
