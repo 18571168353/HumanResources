@@ -480,7 +480,7 @@ export default {
     // 获取基本信息数据
     async getUserDetailById() {
       this.userInfo = await getUserDetailById(this.userId)
-      if (this.userInfo.staffPhoto) {
+      if (this.userInfo.staffPhoto && this.userInfo.staffPhoto.trim()) {
         this.$refs.staffPhoto.fileList = [
           //  upload: true表示上传图片成功
           { url: this.userInfo.staffPhoto, upload: true }
@@ -490,7 +490,7 @@ export default {
     // 获取用户详情信息
     async getPersonalDetail() {
       this.formData = await getPersonalDetail(this.userId)
-      if (this.formData.staffPhoto) {
+      if (this.formData.staffPhoto && this.formData.staffPhoto.trim()) {
         this.$refs.myStaffPhoto.fileList = [
           //  upload: true表示上传图片成功
           { url: this.formData.staffPhoto, upload: true }

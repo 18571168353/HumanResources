@@ -9,9 +9,15 @@
         <el-button
           size="mini"
           type="success"
-          @click="$router.push('/import?type=user')">excl导入</el-button>
-        <el-button size="mini" type="danger" @click="exportData">excl导出</el-button>
-        <el-button size="mini" type="primary" @click="showDialog = true">新增员工</el-button>
+          @click="$router.push('/import?type=user')"
+          >excl导入</el-button
+        >
+        <el-button size="mini" type="danger" @click="exportData"
+          >excl导出</el-button
+        >
+        <el-button size="mini" type="primary" @click="showDialog = true"
+          >新增员工</el-button
+        >
       </template>
     </page-tools>
     <el-card v-loading="loading">
@@ -24,6 +30,17 @@
           prop="username"
           align="center"
         />
+        <el-table-column label="头像" align="center">
+          <template slot-scope="{ row }">
+            <img
+              v-imagerror="require('@/assets/common/head.jpg')"
+              :src="row.staffPhoto"
+              alt=""
+              style="border-radius: 50%; width: 100px; height: 100px; padding: 10px"
+              @click="showQrCode(row.staffPhoto)"
+            />
+          </template>
+        </el-table-column>
         <el-table-column
           label="工号"
           sortable=""
@@ -60,12 +77,19 @@
         </el-table-column>
         <el-table-column label="操作" fixed="right" width="280" align="center">
           <template slot-scope="{ row }">
-            <el-button type="text" size="small" @click="$router.push(`employees/detail/${row.id}`)">查看</el-button>
+            <el-button
+              type="text"
+              size="small"
+              @click="$router.push(`employees/detail/${row.id}`)"
+              >查看</el-button
+            >
             <el-button type="text" size="small">转正</el-button>
             <el-button type="text" size="small">调岗</el-button>
             <el-button type="text" size="small">离职</el-button>
             <el-button type="text" size="small">角色</el-button>
-            <el-button type="text" size="small" @click="deleteEmployee(row.id)">删除</el-button>
+            <el-button type="text" size="small" @click="deleteEmployee(row.id)"
+              >删除</el-button
+            >
           </template>
         </el-table-column>
       </el-table>
@@ -79,9 +103,20 @@
           @current-change="handleCurrentChange"
         >
           />
-        </el-pagination></el-row>
+        </el-pagination></el-row
+      >
     </el-card>
     <add-demployee :show-dialog.sync="showDialog" />
+    <el-dialog
+      width="500px"
+      title="二维码"
+      :visible="showCodeDialog"
+      @close="showCodeDialog = false"
+    >
+      <el-row type="flex" justify="center">
+        <canvas ref="myCanvas" />
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
@@ -90,6 +125,7 @@ import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees' // 引入员工的枚举对象
 import AddDemployee from './components/add-employee'
 import { formatDate } from '@/filters'
+import QrCode from 'qrcode'
 export default {
   name: '',
   components: { AddDemployee },
@@ -103,7 +139,8 @@ export default {
         size: 10
       },
       total: 0,
-      showDialog: false // 添加弹框的显示与隐藏
+      showDialog: false, // 添加弹框的显示与隐藏
+      showCodeDialog: false // 二维码弹框的显示与隐藏
     }
   },
   computed: {},
@@ -211,6 +248,16 @@ export default {
       // return rows.map(item =>
       //   Object.keys(headers).map(key => item[headers[key]])
       // )
+    },
+    showQrCode(url) {
+      if (url) {
+        this.showCodeDialog = true
+        this.$nextTick(() => {
+          QrCode.toCanvas(this.$refs.myCanvas, url)
+        })
+      } else {
+        this.$message.warning('该用户还未上传头像')
+      }
     }
   }
 }
