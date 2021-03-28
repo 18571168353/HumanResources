@@ -80,7 +80,7 @@
             <el-button
               type="text"
               size="small"
-              @click="$router.push(`employees/detail/${row.id}`)"
+              @click="$router.push(`/employees/detail/${row.id}`)"
               >查看</el-button
             >
             <el-button type="text" size="small">转正</el-button>
@@ -103,8 +103,7 @@
           @current-change="handleCurrentChange"
         >
           />
-        </el-pagination></el-row
-      >
+        </el-pagination></el-row>
     </el-card>
     <add-demployee :show-dialog.sync="showDialog" />
     <el-dialog
