@@ -212,6 +212,7 @@
 
 <script>
 import EmployeeEnum from '@/api/constant/employees'
+import { getJobDetail, updateJob, getEmployeeSimple } from '@/api/employees'
 export default {
   name: '',
   components: {},
@@ -253,9 +254,26 @@ export default {
   },
   computed: {},
   watch: {},
-  created() {},
+  created() {
+    this.getJobDetail() // 获取用户岗位信息
+    this.getEmployeeSimple() // 获取员工简单列表信息
+  },
   mounted() {},
-  methods: {}
+  methods: {
+    // 获取用户岗位信息
+    async getJobDetail() {
+      this.formData = await getJobDetail(this.userId)
+    },
+    // 保存更新岗位信息
+    async saveJob() {
+      await updateJob(this.formData)
+      this.$message.success('保存用户岗信息成功!')
+    },
+    // 获取员工简单列表信息
+    async getEmployeeSimple() {
+      this.depts = await getEmployeeSimple()
+    }
+  }
 }
 </script>
 
