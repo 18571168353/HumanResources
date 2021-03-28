@@ -86,7 +86,9 @@
             <el-button type="text" size="small">转正</el-button>
             <el-button type="text" size="small">调岗</el-button>
             <el-button type="text" size="small">离职</el-button>
-            <el-button type="text" size="small">角色</el-button>
+            <el-button type="text" size="small" @click="editRole(row.id)"
+              >角色</el-button
+            >
             <el-button type="text" size="small" @click="deleteEmployee(row.id)"
               >删除</el-button
             >
@@ -103,9 +105,11 @@
           @current-change="handleCurrentChange"
         >
           />
-        </el-pagination></el-row>
+        </el-pagination></el-row
+      >
     </el-card>
     <add-demployee :show-dialog.sync="showDialog" />
+    <!-- 二维码弹框 -->
     <el-dialog
       width="500px"
       title="二维码"
@@ -116,6 +120,12 @@
         <canvas ref="myCanvas" />
       </el-row>
     </el-dialog>
+    <!-- 分配组件弹框 -->
+    <assign-role
+      ref="assignRole"
+      :show-role-dialog.sync="showRoleDialog"
+      :user-id="userId"
+    />
   </div>
 </template>
 
@@ -124,10 +134,11 @@ import { getEmployeeList, delEmployee } from '@/api/employees'
 import EmployeeEnum from '@/api/constant/employees' // 引入员工的枚举对象
 import AddDemployee from './components/add-employee'
 import { formatDate } from '@/filters'
-import QrCode from 'qrcode'
+import AssignRole from './components/assign-role'
+import QrCode from 'qrcode' // 二维码
 export default {
   name: '',
-  components: { AddDemployee },
+  components: { AddDemployee, AssignRole },
   props: {},
   data() {
     return {
@@ -139,7 +150,9 @@ export default {
       },
       total: 0,
       showDialog: false, // 添加弹框的显示与隐藏
-      showCodeDialog: false // 二维码弹框的显示与隐藏
+      showCodeDialog: false, // 二维码弹框的显示与隐藏
+      showRoleDialog: false, // 显示角色选择弹框
+      userId: null
     }
   },
   computed: {},
@@ -248,6 +261,7 @@ export default {
       //   Object.keys(headers).map(key => item[headers[key]])
       // )
     },
+    // 二维码
     showQrCode(url) {
       if (url) {
         this.showCodeDialog = true
@@ -257,6 +271,12 @@ export default {
       } else {
         this.$message.warning('该用户还未上传头像')
       }
+    },
+    // 员工角色弹框
+    async editRole(id) {
+      this.userId = id
+      await this.$refs.assignRole.getUserDetailById(id)
+      this.showRoleDialog = true
     }
   }
 }
