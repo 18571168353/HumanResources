@@ -5,7 +5,7 @@ import NProgress from 'nprogress' // 引入一份进度条插件
 import 'nprogress/nprogress.css' // 引入进度条样式
 const whiteList = ['/login', '/404'] // 定义一个白名单
 // 前置路由
-router.beforeEach(async(to, from, next) => {
+router.beforeEach(async (to, from, next) => {
   NProgress.start() // 开启进度条
   // 如果有token
   if (store.getters.token) {
@@ -15,10 +15,22 @@ router.beforeEach(async(to, from, next) => {
       next('/')
     } else {
       if (!store.getters.userId) {
-        await store.dispatch('user/getUserInfo')
+        const { roles } = await store.dispatch('user/getUserInfo')
+        // 赛选用户的可用路由
+        const routes = await store.dispatch(
+          'permission/filterRoutes',
+          roles.menus
+        )
+        // routes 就是筛选得到的动态路由
+        router.addRoutes([
+          ...routes,
+          { path: '*', redirect: '/404', hidden: true }
+        ])
+        next(to.path)
+      } else {
+        // 否则直接放行
+        next()
       }
-      // 否则直接放行
-      next()
     }
   } else {
     // 没有token

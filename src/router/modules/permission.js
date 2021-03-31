@@ -4,7 +4,7 @@ import Layout from '@/layout'
 export default {
   // 路由规则
   path: '/permission', // 路由地址
-  name: 'permission',
+  name: 'permissions',
   component: Layout,
   children: [
     {

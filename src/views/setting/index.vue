@@ -25,7 +25,12 @@
             <el-table-column align="center" label="描述" prop="description" />
             <el-table-column align="center" label="操作" width="250px">
               <template slot-scope="{ row }">
-                <el-button size="small" type="success">分配权限</el-button>
+                <el-button
+                  size="small"
+                  type="success"
+                  @click="assignPerm(row.id)"
+                  >分配权限</el-button
+                >
                 <el-button size="small" type="primary" @click="editRole(row.id)"
                   >编辑</el-button
                 >
@@ -124,6 +129,31 @@
         </el-col>
       </el-row>
     </el-dialog>
+    <!-- 放置分配权限的弹框 -->
+    <el-dialog
+      title="分配权限"
+      :visible="showPermDialog"
+      @close="btnPermCancel"
+    >
+      <!-- 权限是树形结构 -->
+      <el-tree
+        ref="permTree"
+        :data="permData"
+        :props="defaultProps"
+        default-expand-all
+        show-checkbox
+        check-strictly
+        node-key="id"
+        :default-checked-keys="selectCheck"
+      />
+      <!-- 底部 -->
+      <el-row slot="footer" type="flex" justify="center">
+        <el-button size="small" @click="btnPermCancel">取消</el-button>
+        <el-button size="small" type="primary" @click="btnPermOK"
+          >确定</el-button
+        >
+      </el-row>
+    </el-dialog>
   </div>
 </template>
 
@@ -134,8 +164,11 @@ import {
   deleteRole,
   getRoleDetail,
   updateRole,
-  addRole
+  addRole,
+  assignPerm
 } from '@/api/setting'
+import { getPermissionList } from '@/api/permission'
+import { tranListToTreeData } from '@/utils'
 import { mapGetters } from 'vuex'
 export default {
   name: '',
@@ -150,8 +183,15 @@ export default {
         pagesize: 5,
         total: 0 // 记录总数
       },
+      permData: [], // 专门用来接收权限数据 树形数据
       formData: {}, // 公司信息
-      showDialog: false, // 控制弹出层显示与隐藏
+      roleId: null, // 角色id
+      selectCheck: [], // 将当前角色所拥有的权限id赋值
+      defaultProps: {
+        label: 'name'
+      }, // 定义显示字段的名称
+      showDialog: false, // 控制修改弹出层显示与隐藏
+      showPermDialog: false, // 控制分配权限弹层的显示隐藏
       roleForm: {
         name: '', // 名称
         description: '' // 详细信息
@@ -240,6 +280,29 @@ export default {
       // 移除校验
       this.$refs.roleForm.resetFields()
       this.showDialog = false
+    },
+    // 分配权限弹框
+    async assignPerm(id) {
+      this.roleId = id
+      this.permData = tranListToTreeData(await getPermissionList(), '0')
+      // 获取这个id的权限点
+      const { permIds } = await getRoleDetail(id)
+      this.selectCheck = permIds // 将当前角色所拥有的权限id赋值
+      this.showPermDialog = true
+    },
+    // 确定分配权限
+    async btnPermOK() {
+      await assignPerm({
+        permIds: this.$refs.permTree.getCheckedKeys(),
+        id: this.roleId
+      })
+      this.$message.success('操作成功!')
+      this.showPermDialog = false
+    },
+    // 取消分配权限
+    btnPermCancel() {
+      this.selectCheck = []
+      this.showPermDialog = false
     }
   }
 }

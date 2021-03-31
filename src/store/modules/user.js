@@ -1,5 +1,6 @@
 import { getToken, setToken, removeToken, setTimeStamp } from '@/utils/auth'
 import { login, getUserInfo, getUserDetailById } from '@/api/user'
+import { resetRouter } from '@/router'
 // 放置状态
 const state = {
   token: getToken(), // 设置token 初始化vuex的时候就从缓存中读取
@@ -50,6 +51,11 @@ const actions = {
     context.commit('removeToken')
     // 刪除用戶資料
     context.commit('reomveUserInfo')
+    // 重置路由
+    resetRouter()
+    // 去设置权限模块下的初始状态
+    // mutations名称 载荷 第三个为:{root:true} 调用根级的mutation或者action
+    context.commit('permission/setRoutes', [], { root: true })
   }
 }
 export default {
